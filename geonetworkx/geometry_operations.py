@@ -206,7 +206,18 @@ def get_closest_point_from_points(points_from: PointsCoordinatesLike, points_to:
         raise ValueError("Must provide at least argument 'points_to' or 'kd_tree'")
     if kd_tree is None:
         kd_tree = cKDTree(points_to)
-    return kd_tree.query(points_from)
+    if isinstance(points_from, Point):
+        result = kd_tree.query(points_from.coords)
+    elif isinstance(points_from, MultiPoint):
+        result = kd_tree.query(np.array([[p.x, p.y] for p in points_from.geoms]))
+    elif isinstance(points_from, list):
+        if isinstance(points_from[0][0], float):
+            result = kd_tree.query(points_from)
+        else:
+            raise TypeError(f"Type {type(points_from)} is not managed by scipy.spatial.cKDTree")
+    else:
+        raise TypeError(f"Type {type(points_from)} is not managed by scipy.spatial.cKDTree")
+    return result
 
 
 def get_closest_point_from_line(line_from: LineString, discretization_tol: float,
@@ -414,7 +425,7 @@ def get_closest_line_from_points(points_from, lines_to, discretization_tol):
 
     """
     points_to, points_line_association = discretize_lines(lines_to, discretization_tol)
-    kd_tree = cKDTree(points_to)
+    kd_tree = cKDTree(np.array([[p.x, p.y] for p in points_to.geoms]))
     lines_indexes = []
     for point in points_from:
         result = get_closest_line_from_point(point, kd_tree=kd_tree, points_line_association=points_line_association)
