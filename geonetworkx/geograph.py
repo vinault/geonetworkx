@@ -297,10 +297,10 @@ class GeoGraph(nx.Graph):
         edges_as_lines = graph.get_edges_as_line_series()
         transformed_edges = edges_as_lines.to_crs(crs, epsg)
         # Operate the transformation
-        for n, point in transformed_nodes.iteritems():
+        for n, point in transformed_nodes.items():
             node_data = graph.nodes[n]
             node_data[graph.nodes_geometry_key] = point
-        for e, line in transformed_edges.iteritems():
+        for e, line in transformed_edges.items():
             edge_data = graph.edges[e]
             edge_data[graph.edges_geometry_key] = line
         graph.crs = transformed_nodes.crs
